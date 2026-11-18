@@ -1,7 +1,8 @@
 {
   "name": "مصاريف - إدارة الأصول والعمليات",
   "short_name": "مصاريف",
-  "start_url": "/اسم_المستودع_حقك/",
+  "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#0f172a",
   "theme_color": "#0f172a",
