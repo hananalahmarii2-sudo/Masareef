@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>مصاريف - إدارة الأصول والعمليات</title>
+  <title>مصاريف - الإدارة السحابية للأصول والعمليات</title>
   
   <!-- PWA Settings -->
   <link rel="manifest" href="manifest.json">
@@ -22,262 +22,434 @@
 </head>
 <body class="text-slate-800 antialiased min-h-screen flex flex-col justify-between">
 
-  <!-- TOP PWA BANNER -->
-  <div id="pwa-banner" class="bg-slate-900 text-white px-4 py-3 shadow-md flex items-center justify-between border-b border-slate-700">
-    <div class="flex items-center gap-3">
-      <div class="bg-emerald-500/20 p-2 rounded-lg text-emerald-400">
-        <i data-lucide="smartphone" class="w-5 h-5"></i>
+  <!-- ==================== SCREEN 1: AUTHENTICATION (LOGIN / REGISTER) ==================== -->
+  <div id="auth-screen" class="min-h-screen flex items-center justify-center p-4 bg-slate-900">
+    <div class="bg-white rounded-3xl max-w-md w-full p-8 shadow-2xl space-y-6">
+      <div class="text-center space-y-2">
+        <div class="bg-emerald-500 text-slate-950 w-14 h-14 rounded-2xl flex items-center justify-center mx-auto shadow-lg shadow-emerald-500/30">
+          <i data-lucide="wallet" class="w-8 h-8"></i>
+        </div>
+        <h1 class="text-2xl font-black text-slate-900">تطبيق مصاريف</h1>
+        <p class="text-xs text-slate-500">سجل دخولك لحفظ أصولك وبياناتك سحابياً بأمان</p>
       </div>
-      <div>
-        <p class="text-sm font-semibold">تثبيت تطبيق "مصاريف"</p>
-        <p class="text-xs text-slate-400">للوصول السريع من الشاشة الرئيسية</p>
+
+      <div id="auth-error" class="hidden bg-rose-50 text-rose-600 text-xs font-bold p-3 rounded-xl border border-rose-200 text-center"></div>
+
+      <form id="auth-form" class="space-y-4" onsubmit="handleAuth(event)">
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">البريد الإلكتروني</label>
+          <input type="email" id="auth-email" required placeholder="name@example.com" dir="ltr" class="w-full text-sm px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition text-left">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">كلمة المرور (6 أحرف أو أكثر)</label>
+          <input type="password" id="auth-password" required minlength="6" placeholder="••••••••" dir="ltr" class="w-full text-sm px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition text-left">
+        </div>
+
+        <button type="submit" id="auth-submit-btn" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-xl shadow-md shadow-emerald-600/20 transition text-sm">
+          تسجيل الدخول
+        </button>
+      </form>
+
+      <div class="text-center pt-2 border-t border-slate-100">
+        <button type="button" onclick="toggleAuthMode()" id="auth-toggle-btn" class="text-xs font-bold text-emerald-600 hover:text-emerald-700">
+          ليس لديك حساب؟ أنشئ حساباً جديداً الآن
+        </button>
       </div>
-    </div>
-    <div class="flex items-center gap-2">
-      <button onclick="openInstallModal()" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs px-3 py-1.5 rounded-lg transition-all flex items-center gap-1">
-        <i data-lucide="download" class="w-4 h-4"></i>
-        طريقة التثبيت
-      </button>
-      <button onclick="closeBanner()" class="text-slate-400 hover:text-white p-1">
-        <i data-lucide="x" class="w-4 h-4"></i>
-      </button>
     </div>
   </div>
 
-  <!-- HEADER & NAVIGATION TABS -->
-  <header class="bg-slate-900 text-white pt-6 pb-4 shadow-lg">
-    <div class="max-w-4xl mx-auto px-4 flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <div class="bg-emerald-500 text-slate-950 p-2.5 rounded-xl font-bold">
-          <i data-lucide="wallet" class="w-6 h-6"></i>
+  <!-- ==================== SCREEN 2: MAIN APPLICATION ==================== -->
+  <div id="app-screen" class="hidden flex-col justify-between min-h-screen">
+    
+    <!-- HEADER & NAVIGATION TABS -->
+    <header class="bg-slate-900 text-white pt-6 pb-4 shadow-lg">
+      <div class="max-w-4xl mx-auto px-4 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="bg-emerald-500 text-slate-950 p-2.5 rounded-xl font-bold">
+            <i data-lucide="wallet" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <h1 class="text-xl font-extrabold tracking-wide text-white">مصاريف <span class="text-[10px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full mr-1">مرتبط بالسحاب</span></h1>
+            <p id="user-email-display" class="text-[11px] text-slate-400"></p>
+          </div>
         </div>
-        <div>
-          <h1 class="text-2xl font-extrabold tracking-wide text-white">مصاريف</h1>
-          <p class="text-xs text-slate-400">إدارة الأصول وحركاتها المالية</p>
-        </div>
-      </div>
-      <button onclick="openInstallModal()" id="header-install-btn" class="hidden md:flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs px-3 py-2 rounded-xl border border-slate-700 transition">
-        <i data-lucide="share-2" class="w-4 h-4 text-emerald-400"></i>
-        إضافة للشاشة الرئيسية
-      </button>
-    </div>
-
-    <!-- TABS (Assets is FIRST by default) -->
-    <div class="max-w-4xl mx-auto px-4 mt-6">
-      <div class="flex bg-slate-800/80 p-1 rounded-xl border border-slate-700/50">
-        <button id="tab-btn-assets" onclick="switchTab('assets')" class="flex-1 py-2.5 text-xs font-bold rounded-lg transition-all bg-emerald-500 text-slate-950 flex items-center justify-center gap-2 shadow-sm">
-          <i data-lucide="briefcase" class="w-4 h-4"></i>
-          1. الأصول (الرئيسية)
-        </button>
-        <button id="tab-btn-expenses" onclick="switchTab('expenses')" class="flex-1 py-2.5 text-xs font-bold rounded-lg transition-all text-slate-300 hover:text-white flex items-center justify-center gap-2">
-          <i data-lucide="receipt" class="w-4 h-4"></i>
-          2. تسجيل مصروف / دخل
+        <button onclick="handleLogout()" class="flex items-center gap-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-xs px-3 py-2 rounded-xl border border-rose-500/20 transition font-bold">
+          <i data-lucide="log-out" class="w-4 h-4"></i>
+          خروج
         </button>
       </div>
-    </div>
-  </header>
 
-  <!-- MAIN CONTAINER -->
-  <main class="max-w-4xl mx-auto px-4 py-8 w-full flex-grow space-y-6">
-
-    <!-- ==================== SECTION 1: ASSETS (DEFAULT HOME) ==================== -->
-    <div id="section-assets" class="space-y-6">
-      
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
-          <div>
-            <p class="text-xs font-semibold text-slate-500">إجمالي قيم الأصول الأساسية</p>
-            <h3 id="assets-total-value" class="text-2xl font-black text-slate-900 mt-1">0.00 ر.س</h3>
-          </div>
-          <div class="bg-slate-100 p-3 rounded-xl text-slate-700">
-            <i data-lucide="coins" class="w-6 h-6"></i>
-          </div>
-        </div>
-
-        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
-          <div>
-            <p class="text-xs font-semibold text-slate-500">عدد الأصول المسجلة</p>
-            <h3 id="assets-count" class="text-2xl font-black text-emerald-600 mt-1">0</h3>
-          </div>
-          <div class="bg-emerald-50 p-3 rounded-xl text-emerald-600">
-            <i data-lucide="boxes" class="w-6 h-6"></i>
-          </div>
+      <!-- TABS -->
+      <div class="max-w-4xl mx-auto px-4 mt-6">
+        <div class="flex bg-slate-800/80 p-1 rounded-xl border border-slate-700/50">
+          <button id="tab-btn-assets" onclick="switchTab('assets')" class="flex-1 py-2.5 text-xs font-bold rounded-lg transition-all bg-emerald-500 text-slate-950 flex items-center justify-center gap-2 shadow-sm">
+            <i data-lucide="briefcase" class="w-4 h-4"></i>
+            1. الأصول (الرئيسية)
+          </button>
+          <button id="tab-btn-expenses" onclick="switchTab('expenses')" class="flex-1 py-2.5 text-xs font-bold rounded-lg transition-all text-slate-300 hover:text-white flex items-center justify-center gap-2">
+            <i data-lucide="receipt" class="w-4 h-4"></i>
+            2. تسجيل مصروف / دخل
+          </button>
         </div>
       </div>
+    </header>
 
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- MAIN CONTAINER -->
+    <main class="max-w-4xl mx-auto px-4 py-8 w-full flex-grow space-y-6">
 
-        <!-- FORM TO ADD ASSET -->
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 lg:col-span-1 h-fit space-y-4">
-          <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
-            <i data-lucide="plus-circle" class="w-5 h-5 text-emerald-600"></i>
-            تسجيل أصل جديد
-          </h2>
-          <form id="asset-form" class="space-y-4" onsubmit="handleAddAsset(event)">
+      <!-- ==================== SECTION 1: ASSETS ==================== -->
+      <div id="section-assets" class="space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
             <div>
-              <label class="block text-xs font-bold text-slate-600 mb-1">اسم الأصل (مثال: شيول)</label>
-              <input type="text" id="asset-name" required placeholder="اكتب اسم الأصل..." class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition">
+              <p class="text-xs font-semibold text-slate-500">إجمالي قيم الأصول الأساسية</p>
+              <h3 id="assets-total-value" class="text-2xl font-black text-slate-900 mt-1">0.00 ر.س</h3>
             </div>
+            <div class="bg-slate-100 p-3 rounded-xl text-slate-700">
+              <i data-lucide="coins" class="w-6 h-6"></i>
+            </div>
+          </div>
 
+          <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
             <div>
-              <label class="block text-xs font-bold text-slate-600 mb-1">القيمة التقديرية (ر.س)</label>
-              <input type="number" id="asset-value" step="0.01" required placeholder="0.00" class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition">
+              <p class="text-xs font-semibold text-slate-500">عدد الأصول المسجلة</p>
+              <h3 id="assets-count" class="text-2xl font-black text-emerald-600 mt-1">0</h3>
             </div>
-
-            <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl shadow-md shadow-emerald-600/20 transition flex items-center justify-center gap-2 text-sm">
-              <i data-lucide="check" class="w-4 h-4"></i>
-              حفظ الأصل
-            </button>
-          </form>
+            <div class="bg-emerald-50 p-3 rounded-xl text-emerald-600">
+              <i data-lucide="boxes" class="w-6 h-6"></i>
+            </div>
+          </div>
         </div>
 
-        <!-- ASSETS CARDS WITH RED/GREEN BOXES -->
-        <div class="lg:col-span-2 space-y-6">
-          <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 space-y-4">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <!-- FORM TO ADD ASSET -->
+          <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 lg:col-span-1 h-fit space-y-4">
             <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
-              <i data-lucide="list-tree" class="w-5 h-5 text-emerald-600"></i>
-              قائمة الأصول وحركاتها المباشرة
+              <i data-lucide="plus-circle" class="w-5 h-5 text-emerald-600"></i>
+              تسجيل أصل جديد
             </h2>
-            <div id="assets-detailed-list" class="space-y-4"></div>
+            <form id="asset-form" class="space-y-4" onsubmit="handleAddAsset(event)">
+              <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1">اسم الأصل (مثال: شيول)</label>
+                <input type="text" id="asset-name" required placeholder="اكتب اسم الأصل..." class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition">
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1">القيمة التقديرية (ر.س)</label>
+                <input type="number" id="asset-value" step="0.01" required placeholder="0.00" class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition">
+              </div>
+
+              <button type="submit" id="save-asset-btn" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl shadow-md shadow-emerald-600/20 transition flex items-center justify-center gap-2 text-sm">
+                <i data-lucide="check" class="w-4 h-4"></i>
+                حفظ الأصل سحابياً
+              </button>
+            </form>
           </div>
-        </div>
 
-      </div>
-    </div>
-
-
-    <!-- ==================== SECTION 2: TRANSACTIONS ==================== -->
-    <div id="section-expenses" class="space-y-6 hidden">
-
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-        <!-- TRANSACTION FORM -->
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 lg:col-span-1 h-fit space-y-4">
-          <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
-            <i data-lucide="receipt" class="w-5 h-5 text-emerald-600"></i>
-            تسجيل مصروف أو دخل لأصل
-          </h2>
-          
-          <form id="transaction-form" class="space-y-4" onsubmit="handleAddTransaction(event)">
-            <div>
-              <label class="block text-xs font-bold text-slate-600 mb-1.5">نوع العملية</label>
-              <div class="grid grid-cols-2 gap-2 p-1 bg-slate-100 rounded-xl">
-                <button type="button" id="btn-type-expense" onclick="setTransactionType('expense')" class="py-2 text-xs font-bold rounded-lg transition-all bg-white text-rose-600 shadow-sm">مصروف (-)</button>
-                <button type="button" id="btn-type-income" onclick="setTransactionType('income')" class="py-2 text-xs font-bold rounded-lg transition-all text-slate-500">دخل / إيراد (+)</button>
+          <!-- ASSETS CARDS -->
+          <div class="lg:col-span-2 space-y-6">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 space-y-4">
+              <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                <i data-lucide="list-tree" class="w-5 h-5 text-emerald-600"></i>
+                قائمة الأصول وحركاتها المباشرة
+              </h2>
+              <div id="assets-detailed-list" class="space-y-4">
+                <p class="text-center text-xs text-slate-400 py-6">جاري تحميل البيانات من السحاب...</p>
               </div>
             </div>
-
-            <div>
-              <label class="block text-xs font-bold text-slate-600 mb-1">اختر الأصل (من القائمة المسجلة)</label>
-              <select id="tx-asset-select" required class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition bg-white font-bold">
-                <!-- Filled dynamically from assets -->
-              </select>
-            </div>
-
-            <div>
-              <label class="block text-xs font-bold text-slate-600 mb-1">المبلغ (ر.س)</label>
-              <input type="number" id="tx-amount" step="0.01" required placeholder="0.00" class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition">
-            </div>
-
-            <div>
-              <label class="block text-xs font-bold text-slate-600 mb-1">ملاحظة (اختياري)</label>
-              <input type="text" id="tx-note" placeholder="مثال: صيانة، إيجار..." class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition">
-            </div>
-
-            <div>
-              <label class="block text-xs font-bold text-slate-600 mb-1">التاريخ</label>
-              <input type="date" id="tx-date" required class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition bg-white">
-            </div>
-
-            <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl shadow-md shadow-emerald-600/20 transition flex items-center justify-center gap-2 text-sm">
-              <i data-lucide="check" class="w-4 h-4"></i>
-              حفظ العملية
-            </button>
-          </form>
+          </div>
         </div>
+      </div>
 
-        <!-- TRANSACTIONS LIST -->
-        <div class="lg:col-span-2 space-y-6">
-          <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-            <div class="flex items-center justify-between mb-4">
-              <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
-                <i data-lucide="list" class="w-5 h-5 text-emerald-600"></i>
-                سجل العمليات العام
-              </h2>
-              <button onclick="clearAllTransactions()" class="text-xs text-rose-500 hover:text-rose-700 font-semibold flex items-center gap-1">
-                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                مسح السجل
+      <!-- ==================== SECTION 2: TRANSACTIONS ==================== -->
+      <div id="section-expenses" class="space-y-6 hidden">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <!-- TRANSACTION FORM -->
+          <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 lg:col-span-1 h-fit space-y-4">
+            <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+              <i data-lucide="receipt" class="w-5 h-5 text-emerald-600"></i>
+              تسجيل مصروف أو دخل لأصل
+            </h2>
+            
+            <form id="transaction-form" class="space-y-4" onsubmit="handleAddTransaction(event)">
+              <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1.5">نوع العملية</label>
+                <div class="grid grid-cols-2 gap-2 p-1 bg-slate-100 rounded-xl">
+                  <button type="button" id="btn-type-expense" onclick="setTransactionType('expense')" class="py-2 text-xs font-bold rounded-lg transition-all bg-white text-rose-600 shadow-sm">مصروف (-)</button>
+                  <button type="button" id="btn-type-income" onclick="setTransactionType('income')" class="py-2 text-xs font-bold rounded-lg transition-all text-slate-500">دخل / إيراد (+)</button>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1">اختر الأصل (من القائمة المسجلة)</label>
+                <select id="tx-asset-select" required class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition bg-white font-bold">
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1">المبلغ (ر.س)</label>
+                <input type="number" id="tx-amount" step="0.01" required placeholder="0.00" class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition">
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1">ملاحظة (اختياري)</label>
+                <input type="text" id="tx-note" placeholder="مثال: صيانة، إيجار..." class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition">
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1">التاريخ</label>
+                <input type="date" id="tx-date" required class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition bg-white">
+              </div>
+
+              <button type="submit" id="save-tx-btn" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl shadow-md shadow-emerald-600/20 transition flex items-center justify-center gap-2 text-sm">
+                <i data-lucide="check" class="w-4 h-4"></i>
+                حفظ العملية سحابياً
               </button>
+            </form>
+          </div>
+
+          <!-- TRANSACTIONS LIST -->
+          <div class="lg:col-span-2 space-y-6">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+              <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                  <i data-lucide="list" class="w-5 h-5 text-emerald-600"></i>
+                  سجل العمليات العام
+                </h2>
+              </div>
+              <div id="transactions-list" class="space-y-3"></div>
             </div>
-            <div id="transactions-list" class="space-y-3"></div>
           </div>
-        </div>
-
-      </div>
-    </div>
-
-  </main>
-
-  <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-500">
-    <p>تطبيق مصاريف &copy; 2026 - تتبع الأصول بكل دقة</p>
-  </footer>
-
-  <!-- INSTALL PWA MODAL -->
-  <div id="install-modal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
-    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 relative space-y-5">
-      <button onclick="closeInstallModal()" class="absolute left-4 top-4 text-slate-400 hover:text-slate-600 p-1">
-        <i data-lucide="x" class="w-5 h-5"></i>
-      </button>
-
-      <div class="text-center space-y-2">
-        <div class="bg-emerald-100 text-emerald-600 w-12 h-12 rounded-2xl flex items-center justify-center mx-auto">
-          <i data-lucide="share" class="w-6 h-6"></i>
-        </div>
-        <h3 class="text-xl font-bold text-slate-900">طريقة تثبيت التطبيق على الجوال</h3>
-        <p class="text-xs text-slate-500">تحويل الصفحة إلى تطبيق مباشر على شاشة الهاتف</p>
-      </div>
-
-      <div class="space-y-4 text-sm">
-        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 space-y-2">
-          <div class="flex items-center gap-2 font-bold text-slate-800 text-xs">
-            <i data-lucide="apple" class="w-4 h-4 text-slate-700"></i>
-            أجهزة آيفون (Safari):
-          </div>
-          <ol class="list-decimal list-inside text-xs text-slate-600 space-y-1">
-            <li>اضغط على زر <strong>المشاركة (Share)</strong> بالأسفل.</li>
-            <li>اختر <strong>"الإضافة إلى الشاشة الرئيسية"</strong>.</li>
-            <li>ستجد الاسم تلقائياً <strong>"مصاريف"</strong>، اضغط <strong>إضافة</strong>.</li>
-          </ol>
-        </div>
-
-        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 space-y-2">
-          <div class="flex items-center gap-2 font-bold text-slate-800 text-xs">
-            <i data-lucide="smartphone" class="w-4 h-4 text-emerald-600"></i>
-            أجهزة هواوي وأندرويد (Chrome/Browser):
-          </div>
-          <ol class="list-decimal list-inside text-xs text-slate-600 space-y-1">
-            <li>اضغط على <strong>النقاط الثلاث (⋮)</strong> بالأعلى.</li>
-            <li>اختر <strong>"التثبيت في الشاشة الرئيسية"</strong> أو <strong>"إضافة إلى الشاشة الرئيسية"</strong>.</li>
-          </ol>
         </div>
       </div>
 
-      <button onclick="closeInstallModal()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 rounded-xl text-xs transition">
-        حسناً، فهمت
-      </button>
-    </div>
+    </main>
+
+    <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-500">
+      <p>تطبيق مصاريف &copy; 2026 - جميع البيانات محفوظة ومزامنة سحابياً</p>
+    </footer>
   </div>
 
-  <script>
-    let assets = JSON.parse(localStorage.getItem('my_assets_v4')) || [];
-    let transactions = JSON.parse(localStorage.getItem('my_transactions_v4')) || [];
+  <!-- FIREBASE SDKs & LOGIC -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getFirestore, collection, addDoc, deleteDoc, doc, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    // مفاتيح مشروعك الخاصة
+    const firebaseConfig = {
+      apiKey: "AIzaSyBPQ_66lvwMVsGlO1WE3Yyo2xXsB-H0AbI",
+      authDomain: "masareef-e956f.firebaseapp.com",
+      projectId: "masareef-e956f",
+      storageBucket: "masareef-e956f.firebasestorage.app",
+      messagingSenderId: "804366495485",
+      appId: "1:804366495485:web:151b57b268b6f852a6d894",
+      measurementId: "G-L9GS1DSQ10"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    let currentUser = null;
+    let isRegisterMode = false;
+    let assets = [];
+    let transactions = [];
     let currentType = 'expense';
+    let unsubAssets = null;
+    let unsubTx = null;
 
     document.getElementById('tx-date').valueAsDate = new Date();
     lucide.createIcons();
 
-    // TABS SWITCHING (Assets is default home)
-    function switchTab(tab) {
+    // ================= AUTHENTICATION =================
+    window.toggleAuthMode = function() {
+      isRegisterMode = !isRegisterMode;
+      const submitBtn = document.getElementById('auth-submit-btn');
+      const toggleBtn = document.getElementById('auth-toggle-btn');
+      const errorBox = document.getElementById('auth-error');
+      errorBox.classList.add('hidden');
+
+      if (isRegisterMode) {
+        submitBtn.textContent = 'إنشاء حساب جديد';
+        toggleBtn.textContent = 'لديك حساب بالفعل؟ سجل دخولك';
+      } else {
+        submitBtn.textContent = 'تسجيل الدخول';
+        toggleBtn.textContent = 'ليس لديك حساب؟ أنشئ حساباً جديداً الآن';
+      }
+    };
+
+    window.handleAuth = async function(e) {
+      e.preventDefault();
+      const email = document.getElementById('auth-email').value.trim();
+      const password = document.getElementById('auth-password').value;
+      const errorBox = document.getElementById('auth-error');
+      const submitBtn = document.getElementById('auth-submit-btn');
+
+      errorBox.classList.add('hidden');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'جاري المعالجة...';
+
+      try {
+        if (isRegisterMode) {
+          await createUserWithEmailAndPassword(auth, email, password);
+        } else {
+          await signInWithEmailAndPassword(auth, email, password);
+        }
+      } catch (err) {
+        errorBox.classList.remove('hidden');
+        if (err.code === 'auth/email-already-in-use') errorBox.textContent = 'هذا البريد مسجل مسبقاً، جرب تسجيل الدخول.';
+        else if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password') errorBox.textContent = 'البريد الإلكتروني أو كلمة المرور غير صحيحة.';
+        else if (err.code === 'auth/weak-password') errorBox.textContent = 'كلمة المرور ضعيفة، يجب أن تكون 6 خانات على الأقل.';
+        else errorBox.textContent = 'حدث خطأ: تأكد من إعدادات Firebase أو اتصالك بالإنترنت.';
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = isRegisterMode ? 'إنشاء حساب جديد' : 'تسجيل الدخول';
+      }
+    };
+
+    window.handleLogout = async function() {
+      if (unsubAssets) unsubAssets();
+      if (unsubTx) unsubTx();
+      await signOut(auth);
+    };
+
+    // Listen to Auth State
+    onAuthStateChanged(auth, (user) => {
+      const authScreen = document.getElementById('auth-screen');
+      const appScreen = document.getElementById('app-screen');
+
+      if (user) {
+        currentUser = user;
+        document.getElementById('user-email-display').textContent = user.email;
+        authScreen.classList.add('hidden');
+        appScreen.classList.remove('hidden');
+        appScreen.classList.add('flex');
+        listenToCloudData(user.uid);
+      } else {
+        currentUser = null;
+        authScreen.classList.remove('hidden');
+        appScreen.classList.add('hidden');
+        appScreen.classList.remove('flex');
+      }
+    });
+
+    // ================= CLOUD SYNC (FIRESTORE) =================
+    function listenToCloudData(uid) {
+      const qAssets = query(collection(db, "assets"), where("uid", "==", uid));
+      unsubAssets = onSnapshot(qAssets, (snapshot) => {
+        assets = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        assets.sort((a, b) => b.createdAt - a.createdAt);
+        renderAll();
+      });
+
+      const qTx = query(collection(db, "transactions"), where("uid", "==", uid));
+      unsubTx = onSnapshot(qTx, (snapshot) => {
+        transactions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        transactions.sort((a, b) => b.createdAt - a.createdAt);
+        renderAll();
+      });
+    }
+
+    // ================= ASSETS ACTIONS =================
+    window.handleAddAsset = async function(e) {
+      e.preventDefault();
+      if (!currentUser) return;
+      const name = document.getElementById('asset-name').value.trim();
+      const value = parseFloat(document.getElementById('asset-value').value);
+      const btn = document.getElementById('save-asset-btn');
+
+      if (!name || isNaN(value)) return;
+      btn.disabled = true;
+
+      try {
+        await addDoc(collection(db, "assets"), {
+          uid: currentUser.uid,
+          name,
+          value,
+          createdAt: Date.now()
+        });
+        document.getElementById('asset-name').value = '';
+        document.getElementById('asset-value').value = '';
+      } catch (err) {
+        alert('حدث خطأ أثناء الحفظ السحابي.');
+      } finally {
+        btn.disabled = false;
+      }
+    };
+
+    window.deleteAsset = async function(assetId) {
+      if (confirm('هل أنت متأكد من حذف هذا الأصل؟ (ستُحذف العمليات المرتبطة به أيضاً)')) {
+        try {
+          await deleteDoc(doc(db, "assets", assetId));
+          const relatedTx = transactions.filter(t => t.assetId === assetId);
+          for (const tx of relatedTx) {
+            await deleteDoc(doc(db, "transactions", tx.id));
+          }
+        } catch (err) {
+          alert('تعذر الحذف، حاول مرة أخرى.');
+        }
+      }
+    };
+
+    // ================= TRANSACTIONS ACTIONS =================
+    window.setTransactionType = function(type) {
+      currentType = type;
+      const btnExpense = document.getElementById('btn-type-expense');
+      const btnIncome = document.getElementById('btn-type-income');
+
+      if (type === 'expense') {
+        btnExpense.className = 'py-2 text-xs font-bold rounded-lg transition-all bg-white text-rose-600 shadow-sm';
+        btnIncome.className = 'py-2 text-xs font-bold rounded-lg transition-all text-slate-500';
+      } else {
+        btnIncome.className = 'py-2 text-xs font-bold rounded-lg transition-all bg-white text-emerald-600 shadow-sm';
+        btnExpense.className = 'py-2 text-xs font-bold rounded-lg transition-all text-slate-500';
+      }
+    };
+
+    window.handleAddTransaction = async function(e) {
+      e.preventDefault();
+      if (!currentUser) return;
+      const assetId = document.getElementById('tx-asset-select').value;
+      const amount = parseFloat(document.getElementById('tx-amount').value);
+      const note = document.getElementById('tx-note').value.trim();
+      const date = document.getElementById('tx-date').value;
+      const btn = document.getElementById('save-tx-btn');
+
+      if (!assetId || isNaN(amount)) return;
+      btn.disabled = true;
+
+      try {
+        await addDoc(collection(db, "transactions"), {
+          uid: currentUser.uid,
+          assetId,
+          amount,
+          note,
+          date,
+          type: currentType,
+          createdAt: Date.now()
+        });
+        document.getElementById('tx-amount').value = '';
+        document.getElementById('tx-note').value = '';
+      } catch (err) {
+        alert('حدث خطأ أثناء حفظ العملية.');
+      } finally {
+        btn.disabled = false;
+      }
+    };
+
+    window.deleteTransaction = async function(txId) {
+      try {
+        await deleteDoc(doc(db, "transactions", txId));
+      } catch (err) {
+        alert('تعذر حذف العملية.');
+      }
+    };
+
+    // ================= UI RENDERING =================
+    window.switchTab = function(tab) {
       const expSec = document.getElementById('section-expenses');
       const assSec = document.getElementById('section-assets');
       const btnExp = document.getElementById('tab-btn-expenses');
@@ -294,79 +466,9 @@
         btnExp.className = "flex-1 py-2.5 text-xs font-bold rounded-lg transition-all bg-emerald-500 text-slate-950 flex items-center justify-center gap-2 shadow-sm";
         btnAss.className = "flex-1 py-2.5 text-xs font-bold rounded-lg transition-all text-slate-300 hover:text-white flex items-center justify-center gap-2";
       }
-    }
+    };
 
-    // ASSETS LOGIC
-    function handleAddAsset(e) {
-      e.preventDefault();
-      const name = document.getElementById('asset-name').value.trim();
-      const value = parseFloat(document.getElementById('asset-value').value);
-
-      if (!name || isNaN(value)) return;
-
-      assets.unshift({ id: Date.now(), name, value });
-      saveAndRender();
-
-      document.getElementById('asset-name').value = '';
-      document.getElementById('asset-value').value = '';
-    }
-
-    function deleteAsset(id) {
-      if (confirm('هل أنت متأكد من حذف هذا الأصل؟ (سيتم حذف العمليات المرتبطة به أيضاً)')) {
-        assets = assets.filter(a => a.id !== id);
-        transactions = transactions.filter(t => t.assetId !== id);
-        saveAndRender();
-      }
-    }
-
-    // TRANSACTIONS LOGIC
-    function setTransactionType(type) {
-      currentType = type;
-      const btnExpense = document.getElementById('btn-type-expense');
-      const btnIncome = document.getElementById('btn-type-income');
-
-      if (type === 'expense') {
-        btnExpense.className = 'py-2 text-xs font-bold rounded-lg transition-all bg-white text-rose-600 shadow-sm';
-        btnIncome.className = 'py-2 text-xs font-bold rounded-lg transition-all text-slate-500';
-      } else {
-        btnIncome.className = 'py-2 text-xs font-bold rounded-lg transition-all bg-white text-emerald-600 shadow-sm';
-        btnExpense.className = 'py-2 text-xs font-bold rounded-lg transition-all text-slate-500';
-      }
-    }
-
-    function handleAddTransaction(e) {
-      e.preventDefault();
-      const assetId = parseInt(document.getElementById('tx-asset-select').value);
-      const amount = parseFloat(document.getElementById('tx-amount').value);
-      const note = document.getElementById('tx-note').value.trim();
-      const date = document.getElementById('tx-date').value;
-
-      if (!assetId || isNaN(amount)) return;
-
-      transactions.unshift({ id: Date.now(), assetId, amount, note, date, type: currentType });
-      saveAndRender();
-
-      document.getElementById('tx-amount').value = '';
-      document.getElementById('tx-note').value = '';
-    }
-
-    function deleteTransaction(id) {
-      transactions = transactions.filter(t => t.id !== id);
-      saveAndRender();
-    }
-
-    function clearAllTransactions() {
-      if (confirm('هل أنت متأكد من مسح كافة العمليات؟')) {
-        transactions = [];
-        saveAndRender();
-      }
-    }
-
-    // SAVE & RENDER
-    function saveAndRender() {
-      localStorage.setItem('my_assets_v4', JSON.stringify(assets));
-      localStorage.setItem('my_transactions_v4', JSON.stringify(transactions));
-
+    function renderAll() {
       renderAssetSelectOptions();
       renderAssetsDetailedList();
       renderTransactionsList();
@@ -378,7 +480,7 @@
       selectEl.innerHTML = '';
 
       if (assets.length === 0) {
-        selectEl.innerHTML = '<option value="">لا توجد أصول مسجلة (أضف أصلاً في الصفحة الرئيسية أولاً)</option>';
+        selectEl.innerHTML = '<option value="">لا توجد أصول مسجلة (أضف أصلاً أولاً)</option>';
         return;
       }
 
@@ -431,7 +533,7 @@
                 </div>
                 <div class="flex items-center gap-2">
                   <span class="text-[10px] text-slate-400">${t.date}</span>
-                  <button onclick="deleteTransaction(${t.id})" class="text-slate-300 hover:text-rose-500 transition"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>
+                  <button onclick="deleteTransaction('${t.id}')" class="text-slate-300 hover:text-rose-500 transition"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>
                 </div>
               </div>
             `;
@@ -442,7 +544,6 @@
         const card = document.createElement('div');
         card.className = 'p-5 bg-slate-50 rounded-2xl border border-slate-100 space-y-4';
         card.innerHTML = `
-          <!-- Asset Header -->
           <div class="flex items-center justify-between border-b border-slate-200/60 pb-3">
             <div>
               <h3 class="text-base font-black text-slate-900">${a.name}</h3>
@@ -452,13 +553,12 @@
               <span class="text-xs font-bold px-3 py-1 rounded-full ${netBadgeClass}">
                 الصافي: ${netProfit >= 0 ? '+' : ''}${netProfit.toFixed(2)} ر.س
               </span>
-              <button onclick="deleteAsset(${a.id})" class="text-slate-300 hover:text-rose-500 p-1 transition" title="حذف الأصل">
+              <button onclick="deleteAsset('${a.id}')" class="text-slate-300 hover:text-rose-500 p-1 transition" title="حذف الأصل">
                 <i data-lucide="trash-2" class="w-4 h-4"></i>
               </button>
             </div>
           </div>
 
-          <!-- Red and Green Boxes ( كم دخل وكم صرف ) -->
           <div class="grid grid-cols-2 gap-3 text-center">
             <div class="bg-emerald-50/80 p-3 rounded-xl border border-emerald-200">
               <span class="text-[11px] font-bold text-emerald-700 block mb-0.5">كم دخل منه (+)</span>
@@ -470,7 +570,6 @@
             </div>
           </div>
 
-          <!-- Sub-list -->
           <div>
             <p class="text-xs font-bold text-slate-700 mb-1">تفاصيل العمليات:</p>
             ${txRowsHTML}
@@ -487,11 +586,7 @@
       listEl.innerHTML = '';
 
       if (transactions.length === 0) {
-        listEl.innerHTML = `
-          <div class="text-center py-6 text-slate-400">
-            <p class="text-xs">لا توجد عمليات مسجلة</p>
-          </div>
-        `;
+        listEl.innerHTML = `<p class="text-center py-6 text-xs text-slate-400">لا توجد عمليات مسجلة</p>`;
         return;
       }
 
@@ -512,7 +607,7 @@
             <span class="font-black ${isInc ? 'text-emerald-600' : 'text-rose-600'}">
               ${isInc ? '+' : '-'}${t.amount.toFixed(2)} ر.س
             </span>
-            <button onclick="deleteTransaction(${t.id})" class="text-slate-300 hover:text-rose-500 transition"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>
+            <button onclick="deleteTransaction('${t.id}')" class="text-slate-300 hover:text-rose-500 transition"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>
           </div>
         `;
         listEl.appendChild(item);
@@ -526,23 +621,6 @@
       const totalVal = assets.reduce((acc, a) => acc + a.value, 0);
       document.getElementById('assets-total-value').textContent = `${totalVal.toFixed(2)} ر.س`;
     }
-
-    // MODAL
-    function openInstallModal() {
-      document.getElementById('install-modal').classList.add('flex');
-      document.getElementById('install-modal').classList.remove('hidden');
-    }
-
-    function closeInstallModal() {
-      document.getElementById('install-modal').classList.add('hidden');
-      document.getElementById('install-modal').classList.remove('flex');
-    }
-
-    function closeBanner() {
-      document.getElementById('pwa-banner').style.display = 'none';
-    }
-
-    saveAndRender();
   </script>
 </body>
 </html>
