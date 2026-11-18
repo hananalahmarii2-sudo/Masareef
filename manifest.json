@@ -1,0 +1,15 @@
+{
+  "name": "مصاريف - إدارة الأصول والعمليات",
+  "short_name": "مصاريف",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/9334/9334587.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
